@@ -3,30 +3,57 @@ import random
 import sys
 import threading
 import time
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
+def dess(duration=2.0, lines=8, speed=0.06):
+    """
+    Cosmetic 'fake checking codes' sequence for show.
+    duration: approx total seconds (rough guide)
+    lines: number of status lines to display
+    speed: delay between small updates
+    """
+    clear_screen()
+    print("SYSTEM BOOT / CHECKING ...\n")
+    start = time.time()
+    status_options = [
+        "VERIFYING MODULE", "AUTH TOKEN", "IO CHECK", "MEMSCAN",
+        "GRAPHICS", "INPUT", "SOUND", "LEVELS", "SPEED PROFILE",
+        "USER PREFS", "DRIVER LOAD", "NET CHECK"
+    ]
+    while time.time() - start < duration:
+        for _ in range(lines):
+            hexcode = ''.join(random.choice('0123456789ABCDEF') for _ in range(12))
+            status = random.choice(status_options)
+            ok = random.choice(["OK", "OK", "OK", "WARN", "PASS"])
+            print(f"[{hexcode}] {status} ... {ok}")
+            time.sleep(speed)
+            if time.time() - start >= duration:
+                break
+        elapsed = time.time() - start
+        pct = min(1.0, elapsed / duration)
+        bar_len = 30
+        filled = int(bar_len * pct)
+        bar = '[' + '#' * filled + '-' * (bar_len - filled) + ']'
+        print("\nProgress:", bar, f"{int(pct*100):3d}%")
+        time.sleep(0.12)
+        up_lines = lines + 3
+        print('\033[F' * up_lines, end='')
+    print()
+    print("FINAL STATUS: ALL MODULES OK")
+    time.sleep(0.6)
+    clear_screen()
+dess()
 mainmenu = '''
+                                                     T E T R I S
 
-
-
-
-
-
-
-                                                    1  =  play
-                                                    2  =  credit
-                                                    3 =   options
-                                                    4  =  exit
-                                                    
-                                                    
-                                                    '''
+                                                     1  =  Play
+                                                     2  =  Credit
+                                                     3  =  Options
+                                                     4  =  Exit
+'''
 
 crt = '''
-
-
-
-
-
-
                                             ________________________________X
                                             |                               |
                                             |     creator = @old_murtara    |
@@ -34,82 +61,60 @@ crt = '''
                                             |                               |
                                             |_______________________________|
 
-                                                press Enter for exit.
+                                                Press Enter to exit.
 '''
+
 fpsfast = 0.1
-fpsfasttext = 'fast FPS'
+fpsfasttext = 'Fast'
 fpsmid = 0.4
-fpsmidtext = "meduim FPS"
+fpsmidtext = "Medium"
 fpsslow = 1
-fpsslowtext = "slow FPS"
-supslowfps = 2.5
-supslowfpstext = "Super slow FPS"
-fpssec = 0.4
+fpsslowtext = "Slow"
+supslowfps = 2
+supslowfpstext = "Super Slow"
+fpssec = fpsmid
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
+def show_main_menu():
+    clear_screen()
+    print(mainmenu)
 
-opt = f'''
+def show_credit():
+    clear_screen()
+    print(crt)
+    input("|>  ")
 
-
+def show_options():
+    clear_screen()
+    print(f'''
                                             Select FPS :
 
-                                            1  =  {fpsfasttext}
-                                            2  =  {fpsmidtext}       Defualt
-                                            3  =  {fpsslowtext}
-                                            4  =  {supslowfpstext}
+                                            1  =  {fpsfasttext} > 0.1 refresh rate
+                                            2  =  {fpsmidtext}  > 0.4 refresh rate     (Default)
+                                            3  =  {fpsslowtext} > 1.0 refresh rate
+                                            4  =  {supslowfpstext} > 2.0 refresh rate
 
-
-                                            '''
-
-
-print("starting...")
-time.sleep(1)
-os.system('cls' if os.name == 'nt' else 'clear')
-time.sleep(1)
-while True:
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(mainmenu)
-    print()
-    mainchoise = input("|>  ")
-    if mainchoise == '1':
-        break
-    elif mainchoise == '2':
-        time.sleep(1)
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print(crt)
-        exitmen = input("|>  ")
-        if exitmen == 'snake':
-            print
-        else:
-            continue
-    elif mainchoise == '3':
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print(opt)
-        print()
-        selectfps = input()
-        if selectfps == '1':
-            fpsfast == fpssec
-            continue
-        elif selectfps == '2':
-            fpsmid == fpssec
-            continue
-        elif selectfps == '3':
-            fpsslow == fpssec
-            continue
-        elif selectfps == '4':
-            supslowfps == fpssec
-            continue
-        else:
-            print("wrong input")
-            time.sleep(1)
-            continue
-
-    elif mainchoise == '4':
-        exit("app closed")
+                                            ''')
+def select_fps():
+    global fpssec
+    show_options()
+    selectfps = input("|>  ").strip()
+    if selectfps == '1':
+        fpssec = fpsfast
+        print("\nSelected Fast")
+    elif selectfps == '2':
+        fpssec = fpsmid
+        print("\nSelected Medium")
+    elif selectfps == '3':
+        fpssec = fpsslow
+        print("\nSelected Slow")
+    elif selectfps == '4':
+        fpssec = supslowfps
+        print("\nSelected Super Slow")
     else:
-        print("wrong input")
-        time.sleep(1)
-        continue
-
+        print("\nWrong input, FPS unchanged.")
+    time.sleep(1)
 WIDTH, HEIGHT = 10, 20
 EMPTY = ' .'
 BLOCK = '[]'
@@ -149,7 +154,6 @@ SHAPES = {
         [[0,0,1,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]]
     ]
 }
-
 class Tetris:
     def __init__(self):
         self.board = [[0]*WIDTH for _ in range(HEIGHT)]
@@ -214,7 +218,7 @@ class Tetris:
             self.place_piece()
     def print_board(self):
         print('\033[2J\033[H', end='')  
-        print(f'Score: {self.score}  | 1FPS')
+        print(f'Score: {self.score}  |  FPS: {fpssec}')
         print("")
         board_copy = [row[:] for row in self.board]
         shape = SHAPES[self.current_piece][self.current_rotation]
@@ -272,7 +276,8 @@ class Tetris:
                         self.gameover = True
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-def main():
+
+def play_game():
     game = Tetris()
     if os.name == 'nt':
         input_t = threading.Thread(target=game.input_thread_windows, daemon=True)
@@ -284,14 +289,34 @@ def main():
             game.drop()
             game.print_board()
             print()
-            print("space = rotate")
-            print("arrows = move")
+            print("Space = rotate | Arrows = move | Q = quit")
         time.sleep(fpssec)
     print("Game Over! Final score:", game.score)
-    exitmmm = input()
-    if exitmmm == "retry":
-        exit()
-    else:
-        exit()
+    while True:
+        retry = input("Type '1' to play again or any other key to exit: ").strip().lower()
+        if retry == "1":
+            return True
+        else:
+            return False
+def main():
+    while True:
+        show_main_menu()
+        mainchoice = input("|>  ").strip()
+        if mainchoice == '1':
+            play_again = play_game()
+            if not play_again:
+                break
+        elif mainchoice == '2':
+            show_credit()
+        elif mainchoice == '3':
+            select_fps()
+        elif mainchoice == '4':
+            print("App closed.")
+            sys.exit()
+        else:
+            print("Wrong input")
+            time.sleep(1)
+            continue
+
 if __name__ == '__main__':
     main()
