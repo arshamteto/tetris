@@ -3,6 +3,7 @@ import random
 import sys
 import threading
 import time
+
 mainmenu = '''
 
 
@@ -13,10 +14,11 @@ mainmenu = '''
 
                                                     1  =  play
                                                     2  =  credit
-                                                    3  =  exit'''
-
-
-
+                                                    3 =   options
+                                                    4  =  exit
+                                                    
+                                                    
+                                                    '''
 
 crt = '''
 
@@ -34,6 +36,31 @@ crt = '''
 
                                                 press Enter for exit.
 '''
+fpsfast = 0.1
+fpsfasttext = 'fast FPS'
+fpsmid = 0.4
+fpsmidtext = "meduim FPS"
+fpsslow = 1
+fpsslowtext = "slow FPS"
+supslowfps = 2.5
+supslowfpstext = "Super slow FPS"
+fpssec = 0.4
+
+
+opt = f'''
+
+
+                                            Select FPS :
+
+                                            1  =  {fpsfasttext}
+                                            2  =  {fpsmidtext}       Defualt
+                                            3  =  {fpsslowtext}
+                                            4  =  {supslowfpstext}
+
+
+                                            '''
+
+
 print("starting...")
 time.sleep(1)
 os.system('cls' if os.name == 'nt' else 'clear')
@@ -55,6 +82,28 @@ while True:
         else:
             continue
     elif mainchoise == '3':
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(opt)
+        print()
+        selectfps = input()
+        if selectfps == '1':
+            fpsfast == fpssec
+            continue
+        elif selectfps == '2':
+            fpsmid == fpssec
+            continue
+        elif selectfps == '3':
+            fpsslow == fpssec
+            continue
+        elif selectfps == '4':
+            supslowfps == fpssec
+            continue
+        else:
+            print("wrong input")
+            time.sleep(1)
+            continue
+
+    elif mainchoise == '4':
         exit("app closed")
     else:
         print("wrong input")
@@ -237,7 +286,7 @@ def main():
             print()
             print("space = rotate")
             print("arrows = move")
-        time.sleep(0.4)
+        time.sleep(fpssec)
     print("Game Over! Final score:", game.score)
     exitmmm = input()
     if exitmmm == "retry":
