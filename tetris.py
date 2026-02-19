@@ -1,121 +1,20 @@
-#..... waiting for something to happen?
-
-import os , subprocess , random , sys , threading , time
-os.system('cls' if os.name == 'nt' else 'clear')
-warn = '''
-This software does not work well on Windows 11 
-(cls refresh rate is known as jumpdown & make dots blink)      '''
-time.sleep(0.8)
-print(warn)
-time.sleep(3)
-os.system('cls' if os.name == 'nt' else 'clear')
-time.sleep(1)
-def press_f11(delay: float = 0.05):
-    platform = sys.platform
-    if platform.startswith("win"):
-        import ctypes
-        from ctypes import wintypes
-
-        INPUT_KEYBOARD = 1
-        KEYEVENTF_KEYUP = 0x0002
-        VK_F11 = 0x7A
-        class KEYBDINPUT(ctypes.Structure):
-            _fields_ = [
-                ("wVk", wintypes.WORD),
-                ("wScan", wintypes.WORD),
-                ("dwFlags", wintypes.DWORD),
-                ("time", wintypes.DWORD),
-                ("dwExtraInfo", ctypes.POINTER(ctypes.c_ulong))
-            ]
-        class INPUT_union(ctypes.Union):
-            _fields_ = [("ki", KEYBDINPUT)]
-        class INPUT(ctypes.Structure):
-            _fields_ = [("type", wintypes.DWORD),
-                        ("union", INPUT_union)]
-        SendInput = ctypes.windll.user32.SendInput
-        ki = KEYBDINPUT(wVk=VK_F11, wScan=0, dwFlags=0, time=0, dwExtraInfo=None)
-        inp = INPUT(type=INPUT_KEYBOARD, union=INPUT_union(ki=ki))
-        SendInput(1, ctypes.byref(inp), ctypes.sizeof(inp))
-        time.sleep(delay)
-        ki_up = KEYBDINPUT(wVk=VK_F11, wScan=0, dwFlags=KEYEVENTF_KEYUP, time=0, dwExtraInfo=None)
-        inp_up = INPUT(type=INPUT_KEYBOARD, union=INPUT_union(ki=ki_up))
-        SendInput(1, ctypes.byref(inp_up), ctypes.sizeof(inp_up))
-    elif platform == "darwin":
-        apple_script = 'tell application "System Events" to keystroke "f" using {control down, command down}'
-        subprocess.run(["osascript", "-e", apple_script], check=True)
-    elif platform.startswith("linux"):
-        try:
-            subprocess.run(["xdotool", "key", "F11"], check=True)
-        except FileNotFoundError:
-            raise RuntimeError("xdotool not found. Install it via your package manager (e.g., apt, yum).")
-    else:
-        raise NotImplementedError(f"Platform '{platform}' not supported. by the way yo can go ahead.")
-    print("done.")
-    time.sleep(0.4)   
+import os
+import random
+import sys
+import threading
+import time
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
-if os.name == "nt":
-    import msvcrt
-else:
-    import termios
-    import tty
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
-def get_key():
-    if os.name == "nt":
-        key = msvcrt.getch()
-        if key == b'\xe0':
-            key = msvcrt.getch()
-            if key == b'H':
-                return "UP"
-            elif key == b'P':
-                return "DOWN"
-        elif key == b'\r':
-            return "ENTER"
-    else:
-        fd = sys.stdin.fileno()
-        old = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            key = sys.stdin.read(3)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
-        if key == '\x1b[A':
-            return "UP"
-        elif key == '\x1b[B':
-            return "DOWN"
-        elif key == '\n':
-            return "ENTER"
-    return None
-options = ["Windows", "Linux"]
-current = 0
-while True:
-    clear()
-    print("\n" * 5)
-    for i, opt in enumerate(options):
-        if i == current:
-            print(f"\t\t\033[100m {opt} \033[0m")  # هایلایت خاکستری
-        else:
-            print(f"\t\t {opt}")
-    key = get_key()
-    if key == "UP":
-        current = (current - 1) % len(options)
-    elif key == "DOWN":
-        current = (current + 1) % len(options)
-    elif key == "ENTER":
-        clear()
-        if options[current] == "Linux":
-            print("sucess!")
-            time.sleep(1)
-        elif options[current] == "Windows":
-            print("success!")
-            time.sleep(1)
-            press_f11()
-        break
 def dess(duration=2.0, lines=8, speed=0.06):
+    """
+    Cosmetic 'fake checking codes' sequence for show.
+    duration: approx total seconds (rough guide)
+    lines: number of status lines to display
+    speed: delay between small updates
+    """
     clear_screen()
-    print("PYTHON BOOT / CHECKING ...\n")
+    print("SYSTEM BOOT / CHECKING ...\n")
     start = time.time()
     status_options = [
         "VERIFYING MODULE", "AUTH TOKEN", "IO CHECK", "MEMSCAN",
@@ -126,7 +25,7 @@ def dess(duration=2.0, lines=8, speed=0.06):
         for _ in range(lines):
             hexcode = ''.join(random.choice('0123456789ABCDEF') for _ in range(12))
             status = random.choice(status_options)
-            ok = random.choice(["OK", "OK", "OK", "ACCEPT", "PASS"])
+            ok = random.choice(["OK", "OK", "OK", "WARN", "PASS"])
             print(f"[{hexcode}] {status} ... {ok}")
             time.sleep(speed)
             if time.time() - start >= duration:
@@ -140,17 +39,11 @@ def dess(duration=2.0, lines=8, speed=0.06):
         time.sleep(0.12)
         up_lines = lines + 3
         print('\033[F' * up_lines, end='')
-        time.sleep(0.3)
-        os.system('cls' if os.name == 'nt' else 'clear')
     print()
     print("FINAL STATUS: ALL MODULES OK")
     time.sleep(0.6)
     clear_screen()
 dess()
-time.sleep(0.5)
-print("no error reported.")
-time.sleep(1)
-os.system('cls' if os.name == 'nt' else 'clear')
 mainmenu = '''
                                                      T E T R I S
 
@@ -383,6 +276,7 @@ class Tetris:
                         self.gameover = True
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
 def play_game():
     game = Tetris()
     if os.name == 'nt':
@@ -423,5 +317,6 @@ def main():
             print("Wrong input")
             time.sleep(1)
             continue
+
 if __name__ == '__main__':
     main()
